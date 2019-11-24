@@ -1,0 +1,6 @@
+.dist
+.vscode
+*.pyc
+*.pdf
+*.txt
+__pycache__
