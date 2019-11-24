@@ -20,7 +20,7 @@ def tfidfMatrix(X):
 
 def pmiMatrix(termFrecuency):
     # termFrecuency = np.array(termFrecuency)
-    termFrecuency = (termFrecuency.T).dot(termFrecuency)
+    # termFrecuency = (termFrecuency.T).dot(termFrecuency)
     total = int(np.sum(termFrecuency))
     # n = len(termFrecuency)
     f_rows = np.sum(termFrecuency,axis=0)
@@ -31,7 +31,7 @@ def pmiMatrix(termFrecuency):
 
 def doc2vecMatrix(X):
     tagged_data = [TaggedDocument(words=_d.split(), tags=[str(i)]) for i, _d in enumerate(X)]
-    model = Doc2Vec(vector_size=500)
+    model = Doc2Vec(vector_size=2000)
     model.build_vocab(tagged_data)
     model.train(tagged_data, total_examples=model.corpus_count,epochs=model.iter,total_words=1000)
     model.save("d2v.model")
@@ -45,9 +45,16 @@ def doc2vecMatrix(X):
 #print(X_features.shape)
 #save_tfidf = X_features
 
+<<<<<<< HEAD
 #X, Y = readDataset('dataset/data.json')
 #X_features = doc2vecMatrix(X)
 #print(X_features.shape)
+=======
+X, Y = readDataset('dataset/data.json')
+X_features = doc2vecMatrix(X)
+print(X_features[0])
+# print(pmiMatrix(X_features))
+>>>>>>> 959b45a8f58717fb4592f671b6d280e5729eb48f
 # test_data = "yo soy cubano cubano".lower().split()
 # v1 = X_features.infer_vector(test_data)
 # print("V1_infer", v1.shape)
