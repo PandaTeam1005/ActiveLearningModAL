@@ -33,7 +33,7 @@ def doc2vecMatrix(X):
     tagged_data = [TaggedDocument(words=_d.split(), tags=[str(i)]) for i, _d in enumerate(X)]
     model = Doc2Vec(vector_size=2000)
     model.build_vocab(tagged_data)
-    model.train(tagged_data, total_examples=model.corpus_count,epochs=model.iter)
+    model.train(tagged_data, total_examples=model.corpus_count,epochs=model.iter,total_words=1000)
     model.save("d2v.model")
     result = []
     for i in range(len(X)):
@@ -48,7 +48,18 @@ def doc2vecMatrix(X):
 # X, Y = readDataset('dataset/data.json')
 # X_features = doc2vecMatrix(X)
 # print(X_features[0])
-# print(pmiMatrix(X_features))
+
+#X, Y = readDataset('dataset/data.json')
+#X_features = termFrecuencyMatrix(X)
+#print(X_features.shape)
+#save_tfidf = X_features
+
+#X, Y = readDataset('dataset/data.json')
+#X_features = doc2vecMatrix(X)
+#print(X_features.shape)
+X, Y = readDataset('dataset/data.json')
+X_features = doc2vecMatrix(X)
+print(X_features[0])
 # test_data = "yo soy cubano cubano".lower().split()
 # v1 = X_features.infer_vector(test_data)
 # print("V1_infer", v1.shape)
