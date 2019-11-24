@@ -40,14 +40,14 @@ def doc2vecMatrix(X):
         result.append(model.docvecs[str(i)])
     return np.array(result)
 
-X, Y = readDataset('dataset/data.json')
-X_features = termFrecuencyMatrix(X)
-print(X_features.shape)
-save_tfidf = X_features
+# X, Y = readDataset('dataset/data.json')
+# X_features = termFrecuencyMatrix(X)
+# print(X_features.shape)
+# save_tfidf = X_features
 
-X, Y = readDataset('dataset/data.json')
-X_features = doc2vecMatrix(X)
-print(X_features[0])
+# X, Y = readDataset('dataset/data.json')
+# X_features = doc2vecMatrix(X)
+# print(X_features[0])
 # print(pmiMatrix(X_features))
 # test_data = "yo soy cubano cubano".lower().split()
 # v1 = X_features.infer_vector(test_data)
