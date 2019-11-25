@@ -39,9 +39,18 @@ def readDataset(filename):
                 words.add(w)
         X_comment.append(" ".join(text))
         Y_comment.append(obj['answers'][0]['answer'])
-    # print(words)
-    # print(len(words))
-    return X_comment, Y_comment
+
+    pos = []
+    neg = []
+    for i,y in enumerate(Y_comment):
+        if y == "Negativo":
+            neg.append(X_comment[i])
+        elif y == "Positivo":
+            pos.append(X_comment[i])
+
+    X = pos + neg
+    Y = ["Positivo"]*len(pos) + ["Negativo"]*len(neg)
+    return X, Y
 
 def preprocess(text, dicc = {}):
     result_text = set()
