@@ -31,7 +31,7 @@ def pmiMatrix(termFrecuency):
 
 def doc2vecMatrix(X):
     tagged_data = [TaggedDocument(words=_d.split(), tags=[str(i)]) for i, _d in enumerate(X)]
-    model = Doc2Vec(vector_size=2000)
+    model = Doc2Vec(vector_size=150)
     model.build_vocab(tagged_data)
     model.train(tagged_data, total_examples=model.corpus_count,epochs=model.iter,total_words=1000)
     model.save("d2v.model")
