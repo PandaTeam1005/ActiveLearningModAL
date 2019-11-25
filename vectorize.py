@@ -45,16 +45,9 @@ def doc2vecMatrix(X):
 #print(X_features.shape)
 #save_tfidf = X_features
 
-<<<<<<< HEAD
 #X, Y = readDataset('dataset/data.json')
 #X_features = doc2vecMatrix(X)
 #print(X_features.shape)
-=======
-X, Y = readDataset('dataset/data.json')
-X_features = doc2vecMatrix(X)
-print(X_features[0])
-# print(pmiMatrix(X_features))
->>>>>>> 959b45a8f58717fb4592f671b6d280e5729eb48f
 # test_data = "yo soy cubano cubano".lower().split()
 # v1 = X_features.infer_vector(test_data)
 # print("V1_infer", v1.shape)
