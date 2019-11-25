@@ -1,7 +1,7 @@
 from sklearn.decomposition import PCA
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier,NearestCentroid
 from modAL.models import ActiveLearner,Committee
 from modAL.uncertainty import uncertainty_sampling
 from sklearn.svm import SVC
@@ -82,7 +82,7 @@ def cmte_loop(estimator,X_0,Y_0,X_train,Y_train,X_test,Y_test,indexs,n=5):
     index = 0
     plts_train = []
     plts_test = []
-    while len(X_pool)>= 1:
+    while index<30:
         query_indxs,_ = committee.query(X_pool)
         committee.teach(X=X_pool[query_indxs],y=Y_pool[query_indxs])
         X_0 = np.append(X_0,X_pool[query_indxs],axis=0)
@@ -111,7 +111,7 @@ def Query_by_committee(X,Y,estimator):
     Y_test = Y[indexs]
     X_train = np.delete(X,indexs,axis=0)
     Y_train = np.delete(Y,indexs)
-    indexs = np.random.randint(0,len(X_train),50)
+    indexs = np.random.randint(0,len(X_train),270)
     X_0 = X[indexs]
     Y_0 = Y[indexs]
     learner,test,train = cmte_loop(estimator,X_0,Y_0,X_train,Y_train,X_test,Y_test,indexs)
@@ -119,7 +119,7 @@ def Query_by_committee(X,Y,estimator):
     is_Correct = (predictions==Y_test)
     accs = sum([1 if i else 0 for i in is_Correct])/len(predictions)
     print(accs)
-    ns = range(10,len(X)-256)
+    ns = range(len(train))
     plt.plot(ns,train,color="green")
     plt.plot(ns,test,color="red")
     plt.show()
@@ -132,11 +132,19 @@ def Query_by_committee(X,Y,estimator):
 #iris = load_iris()
 
 #X = iris['data']
-#Y = iris['target']
+
+
 X, Y = readDataset('dataset/data.json')
-replace_dict = {'Objetivo':2,'Negativo':0,'Positivo':3,"Neutro":1}
+replace_dict = {'Objetivo':2,'Negativo':0,'Positivo':3,"Neutro":0}
 Y = [replace_dict[y] for y in Y]
 Y = np.array(Y)
 X_features = doc2vecMatrix(X)
 X = X_features
-Query_by_committee(X,Y,[SVC(kernel="rbf",probability=True,gamma="auto"),SVC(kernel="rbf",probability=True,gamma="auto"),SVC(kernel="rbf",probability=True,gamma="auto"),SVC(kernel="rbf",probability=True,gamma="auto"),SVC(kernel="rbf",probability=True,gamma="auto")])
+visualize_data(X,Y)
+e1 = KNeighborsClassifier(n_neighbors=20)
+e2 = SVC(kernel="linear",probability=True,gamma="auto")
+e3 = KNeighborsClassifier(n_neighbors=100)
+e4 = SVC(kernel="rbf",probability=True,gamma="auto")
+e5 = SVC(kernel="rbf",probability=True,gamma="auto")
+Query_by_committee(X,Y,[e1,e2,e3,e4,e5])
+
