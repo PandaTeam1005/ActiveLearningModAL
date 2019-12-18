@@ -1,0 +1,144 @@
+\documentclass[]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amsthm, amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{multirow}
+
+%opening
+\title{\huge Active Learning para detectar opiniones en comentarios}
+\author{Ariel Bazán Rey C-512 \\ Greidy Valdes C-512}
+\date{}
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+En la actualidad la detección de opiniones en comentarios es un problema que generalmente se ataca con aprendizaje supervisado. Esto genera la necesidad de un conjunto de datos clasificados sobre los cuales debe aprender el algoritmo realizado, pero este conjunto de datos no siempre es fácil de construir. El enfoque que se propone es usar Active Learning junto con algoritmos supervisados para la creación de un corpus lo más pequeño posible a través de ir seleccionando "inteligentemente" los datos a clasificar.
+
+\section{Creación del conjunto de datos}
+
+No fue posible encontrar ningún corpus en español con comentarios y su posterior clasificación en Positivo o Negativo. Por esto, fue necesario crear este corpus. En medio de este proceso se observó que los comentarios no solamente podían ser clasificados en Positivos y Negativos, ya que existían algunos realizando preguntas o añadiendo información. Otros, eran parte positivos y parte negativos. Por esto se decidió añadir dos nuevas opciones y clasificar los primeros como Objetivos y los segundos como Neutros.
+
+De esta forma, utilizando los comentarios de Cubadebate acerca de las 70 tiendas en USD en el país, se construyó un conjunto de datos de 650 comentarios, de los cuales 168 son positivos, 140 negativos, 261 objetivos y 81 neutros.
+
+Como se puede apreciar, el conjunto alcanzado fue muy pequeño y desbalanceado.
+
+\section{Naturaleza de los Datos}
+
+En los datos obtenidos resultó sorprendente la cantidad de errores ortográficos y abreviaturas presentes. Como resulta evidente, esto tiene grandes consecuencias en cualquier representación de los datos ya que resulta más trabajoso encontrar correlación entre palabras con errores.
+
+Otro aspecto que resultó preocupante es lo difícil que fue clasificar los comentarios ya que 2 personas pueden clasificar el mismo texto de manera distinta. Si para una persona esta tarea resulta difícil, muchos pensarían que para una computadora puede ser una tarea imposible.
+
+También existen comentarios que no constituyen una opinión acerca de la noticia sino de comentarios anteriores. Esto puede confundir altamente a cualquier algoritmo de clasificación.
+
+\section{Active Learning}
+Se pensó que la técnica de Active Learning es la más adecuada para el problema en cuestión por varias razones. Esta estrategia suele funcionar bien para conjuntos de datos pequeños ya que el propio clasificador selecciona qué datos añadir al conjunto de entrenamiento para definir mejor la superficie de decisión. Lo componen 4 elementos principales:
+
+\begin{enumerate}
+    \item S Estrategia de selección: Es la encargada de seleccionar el próximo elemento a añadir al conjunto de entrenamiento.
+    \item O Oráculo: Es el que sabe cuál es la verdadera clasificación de un elemento del conjunto de datos. Puede ser, para un conjunto de datos, la clasificación ya conocida de los mismos, o puede necesitar de la intervención humana.
+    \item Sc Criterio de parada: Determina hasta cuándo seguir añadiendo elementos al conjunto de entrenamiento.
+    \item L y U Etiquetados y no etiquetados: Conjuntos de elementos etiquetados y no etiquetados respectivamente en cada iteración del proceso de Active Learning.
+\end{enumerate}
+
+Existe otro elemento que aunque en la literatura no constituye un elemento para active learning en la gran mayoría de los casos es utilizado por la estrategia de selección. Este elemento es el clasificador. 
+
+El clasificador usualmente además de predecir la clase a la que pertenece un elemento permite estimar la probabilidad de que realmente esta sea la correcta. Esto es utilizado por la estrategia de selección para escoger, por ejemplo, los casos con menor probabilidad.
+
+\section{Estrategias de Selección}
+
+Una estrategia de selección puede ser cualquier función que, conocidos L y U, seleccione cuáles deben ser los próximos elementos a ser etiquetados por el oráculo.
+
+Se probaron varios tipos de criterios como \textbf{uncertain sampling} y \textbf{query by committee}.
+
+Uncertain Sampling consiste en seleccionar los elementos del conjunto no etiquetados que, luego de pasarlos por el clasificador, presentan menor probabilidad de pertenencia a su respectiva clase. Esta estrategia trata de seleccionar siempre los elementos más cerca de la frontera de decisión. 
+
+Este criterio aunque en la mayoría de los casos garantizó una alta precisión en los elementos utilizados para entrenar no proporcionó resultados significativos en los elementos de validación.
+
+Query by Committee: En esta estrategia se utilizan más de un clasificador y se establece un sistema de votación para seleccionar el próximo elemento a etiquetar.
+
+Esta estrategia posibilitó un mejor balance entre a precisión de los conjunto de validación y entrenamiento.
+
+\section{Clasificadores}
+
+Para el problema en cuestión se utilizaron dos tipos de clasificadores que son buenos en vectores de grandes dimensiones, Support Vector Machine (SVM) y K-Nearest Neighbours (KNN). En un principio SVM fue utilizado con distintos tipos de kernels pero siempre catalogaba los elementos de prueba como objetivos aunque el conjuntos de elementos entrenantes estuviera balanceado. No obstante KNN identificaba los nuevos elementos en las 2 categorías pero daba una precisión muy baja para distintos valores de \textit{K}
+
+\section{Criterios de Paradas}
+
+Se utilizó siempre como criterio de parada que la cardinalidad de U fuese 0. Esto se debe a que son tan pocos datos que con ellos no es suficiente para establecer una buena superficie de decisión.
+
+\section{Representación de documentos}
+
+Antes de representar los documentos como vectores se realizaron pre-procesamientos al texto:
+
+\begin{enumerate}
+    \item Llevar todo el texto a letra minúscula
+    \item Eliminar las palabras con errores ortográficos (que no aparezcan en el diccionario)
+    \item Tokenizar
+    \item Eliminar stopwords, signos de puntuación y números
+    \item Stemming
+\end{enumerate}
+
+Se probaron varias representaciones de los datos como Tf,Tf-idf y Doc2Vec. Este último utiliza word-embedings y representa los documentos como un vector de la longitud deseada.
+
+\section{Solución propuesta}
+
+
+Después de un largo proceso de experimentación, se utilizaron los siguientes aspectos:
+
+\begin{enumerate}
+    \item Representación: Se seleccionó Doc2Vec ya que la utilización de word embedings permite una mejor representación de las palabras. Se utilizó un vector de tamaño 150 para representar los comentarios. Esta selección permitió rapidez en los clasificadores ya que trabajaron con vectores relativamente pequeños.
+    \item Datos seleccionados: Ninguno de los experimentos realizados permitieron clasificar adecuadamente los datos. Se piensa que esto se debe a que existían muchos comentarios Objetivos y muy pocos Neutros. Por esto se decidió eliminar estos elementos del conjunto de datos y hacer solamente un clasificador en Positivo y Negativo. Luego de esto se separaron el 20\% de los datos para validación y el resto para entrenamiento.
+    \item Estrategia de Selección: Se utilizó Query by Committee con 5 clasificadores: 2 SVM con kernels lineal y radial respectivamente, 2 KNN con $K= 10$ y $K=20$ y  Naive Bayes.
+    \item Criterio de Parada: $|U| = 0$.
+    \item Oráculo: Dataset pre-clasificado.
+\end{enumerate}
+
+Se utilizó la librería de Python \textit{modAL}. Esta ya tiene implementado una clase \textit{ActiveLearner} que recibe un criterio de selección, los datos y el clasificador. También contiene una clase \textit{Committee} que recibe varios \textit{ActiveLearners}.
+
+\section{Curva de Aprendizaje}
+
+
+Las figuras \ref{img:e} y \ref{img:P} muestran una comparación entre Support Vector Machine (SVM) y la propuesta enunciada anteriormente con respecto al error y la precisión ante distintas cantidades de datos. Para la obtención de estas gráficas se ejecutaron 30 veces los clasificadores y se mostró la media. Las sombras en cada línea representan la varianza de los datos. Como error se utiliza $err = 1 - precision$ ya que el módulo utilizado no presenta una forma de calcular el error.   
+
+Las lines roja y verde constituyen la curva de aprendizaje del clasificador propuesto. La línea roja corresponde a datos de validación y la verde en los datos de entrenamiento. 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=300px]{image/precision}
+    \caption{\label{img:P}Comparación de precisión con SVM}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+    \includegraphics[width=300px]{image/error}
+    \caption{\label{img:e}Comparación de error con SVM}
+\end{figure}
+
+Como se puede apreciar, el error no converge, esto parece indicar que no presenta un alto sesgo (underfitting). La distancia entre las curvas roja y verde, así como la no convergencia de las mismas, parece indicar que más datos ayudarían a obtener mejores resultados. 
+
+\section{Experimentación}
+
+Como se puede apreciar en la figura \ref{img:e}, la propuesta presentado resulta mejor que aplicar solamente SVM con los datos utilizados. Por esto se realizaron experimentos semejantes con los datos iniciales para clasificar en Opinión (Positivo, Negativo) y No Opinión, se obtuvieron resultados semejantes con respecto a la precisión y el error. 
+
+Debido a estos resultados, se procedió a crear un clasificador en dos partes con todos los datos iniciales. En un primer momento se crea un clasificador con todos los datos de prueba en Opinión y No Opinión (C1). Posteriormente aquellos que sean Negativos o Positivos son utilizados para un segundo clasificador.(C2) De esta forma para clasificar un comentario C1 determina si constituye o no una opinión. En caso de serlo, C2 determina si es positiva o negativa (C3).
+
+Aunque por separado C1 y C2 alcanzaron mejores medidas que SVM, C3 no alcanzó los resultados esperados ya que SVM con un kernel radial es capaz de clasificar los comentarios en No Opinión, Positivo o Negativo con una precisión superior a la obtenida por C3.
+
+\section{Recomendaciones}
+
+En un trabajo futuro, se proponen las siguientes tareas:
+
+\begin{enumerate}
+    \item Corrección ortográfica: Diseñar un corrector ortográfico para los datos ya que se eliminó gran parte de los comentario debido a esto.
+    \item Clasificar más datos.
+    \item Ampliación manual del vocabulario: se eliminaron palabras que, aunque no aparecen en el diccionario, son importantes en el contexto de una noticia.
+\end{enumerate}
+
+\end{document}
